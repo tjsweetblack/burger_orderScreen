@@ -15,14 +15,243 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController fullNameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController emailPhoneController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFE8E8E8), // Match background color
+      body: BlocConsumer<AuthCubit, AuthState>(
+        listener: (context, state) async {
+          if (state is AuthLoading) {
+            showLoadingDialog(context);
+          } else if (state is AuthError) {
+            Navigator.pop(context);
+            showErrorDialog(context, state.message);
+          } else if (state is UserSingupButNotVerified) {
+            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => CreatePasswordScreen(
+                        emailOrPhone: emailPhoneController.text,
+                        fullName: fullNameController.text,
+                        phoneNumber: phoneController.text,
+                      )),
+            );
+          }
+        },
+        builder: (context, state) {
+          return _buildSignupEmailPage(context);
+        },
+      ),
+    );
+  }
+
+  Widget _buildSignupEmailPage(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 32), // Add some top spacing
+              Image.asset(
+                'assets/images/logo1.png', // Replace with your actual logo path
+                height: 144,
+                color: const Color(0xFFE32626), // Match logo color
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Criar Sua Conta",
+                style: TextStyles.font24Blue700Weight.copyWith(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black), // Match title style
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Crie uma conta para explorar noticias.",
+                style: TextStyles.font14Grey400Weight.copyWith(
+                    fontSize: 16,
+                    color:
+                        Colors.black.withOpacity(0.6)), // Match subtitle style
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextField(
+                    controller: fullNameController,
+                    style: const TextStyle(color: Colors.black),
+                    decoration: const InputDecoration(
+                      hintText: "Nome Completo",
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    style: const TextStyle(color: Colors.black),
+                    decoration: const InputDecoration(
+                      hintText: "Telefone",
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextField(
+                    controller: emailPhoneController,
+                    style: const TextStyle(color: Colors.black),
+                    decoration: const InputDecoration(
+                      hintText: "Email ou telefone",
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // For now, directly navigate to the next screen
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => CreatePasswordScreen(
+                                emailOrPhone: emailPhoneController.text,
+                                fullName: fullNameController.text,
+                                phoneNumber: phoneController.text,
+                              )),
+                    );
+                    // In a real scenario, you might want to check if the email/phone exists
+                    // or initiate the signup process up to the password stage.
+                    // context.read<AuthCubit>().checkEmailOrPhone(emailPhoneController.text);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    textStyle: const TextStyle(fontSize: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0)),
+                    backgroundColor:
+                        const Color(0xFFE32626), // Match button color
+                    foregroundColor: Colors.white, // Match button text color
+                  ),
+                  child: const Text(
+                    "Continuar",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                "One un cotto cx DOUBL", // Match bottom text
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFFE32626),
+        ),
+      ),
+    );
+  }
+
+  void showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text(
+          'Error',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CreatePasswordScreen extends StatefulWidget {
+  final String emailOrPhone;
+  final String fullName;
+  final String phoneNumber;
+
+  const CreatePasswordScreen(
+      {super.key,
+      required this.emailOrPhone,
+      required this.fullName,
+      required this.phoneNumber});
+
+  @override
+  State<CreatePasswordScreen> createState() => _CreatePasswordScreenState();
+}
+
+class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFE8E8E8), // Match background color
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) async {
           if (state is AuthLoading) {
@@ -47,105 +276,128 @@ class _SignUpScreenState extends State<SignUpScreen> {
           }
         },
         builder: (context, state) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.person_add, size: 80, color: Colors.blue),
-                  SizedBox(height: 16),
-                  Text(
-                    "Create Account",
-                    style: TextStyles.font24Blue700Weight.copyWith(fontSize: 24),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Sign up now and start exploring all that our app has to offer.",
-                    style: TextStyles.font14Grey400Weight.copyWith(fontSize: 14),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 24),
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: "Full Name",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  TextField(
-                    controller: phoneController,
-                    decoration: InputDecoration(
-                      labelText: "Phone Number",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      labelText: "Email",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  TextField(
+          return _buildCreatePasswordPage(context);
+        },
+      ),
+    );
+  }
+
+  Widget _buildCreatePasswordPage(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 32), // Add some top spacing
+              Image.asset(
+                'assets/images/logo1.png', // Replace with your actual logo path
+                height: 144,
+                color: const Color(0xFFE32626), // Match logo color
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Digite a nova senha",
+                style: TextStyles.font24Blue700Weight.copyWith(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black), // Match title style
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Defina senhas complexas para proteger",
+                style: TextStyles.font14Grey400Weight.copyWith(
+                    fontSize: 16,
+                    color:
+                        Colors.black.withOpacity(0.6)), // Match subtitle style
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextField(
                     controller: passwordController,
                     obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: "Password",
-                      border: OutlineInputBorder(),
+                    style: const TextStyle(color: Colors.black),
+                    decoration: const InputDecoration(
+                      hintText: "Senha",
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none,
+                      prefixIcon: Icon(Icons.lock_outline),
                     ),
                   ),
-                  SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<AuthCubit>().signUpWithEmail(
-                        nameController.text,
-                        emailController.text,
-                        passwordController.text,
-                        phoneController.text);
-                    },
-                    child: Text("Sign Up"),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Already have an account? "),
-                      GestureDetector(
-                        onTap: () {
-                          context.pushNamed(Routes.loginScreen);
-                        },
-                        child: Text(
-                          "Sign In",
-                          style: TextStyles.font14Blue400Weight.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Text("Or sign up with Google"),
-                  SizedBox(height: 8),
-                  InkWell(
-                    onTap: () {
-                      context.read<AuthCubit>().signInWithGoogle();
-                    },
-                    child: SvgPicture.asset(
-                      'assets/svgs/google_logo.svg',
-                      width: 40,
-                      height: 40,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          );
-        },
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextField(
+                    controller: confirmPasswordController,
+                    obscureText: true,
+                    style: const TextStyle(color: Colors.black),
+                    decoration: const InputDecoration(
+                      hintText: "Digite novamente a senha",
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none,
+                      prefixIcon: Icon(Icons.lock_outline),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (passwordController.text ==
+                        confirmPasswordController.text) {
+                      context.read<AuthCubit>().signUpWithEmail(
+                          widget.fullName,
+                          widget.emailOrPhone,
+                          passwordController.text,
+                          widget.phoneNumber);
+                    } else {
+                      showErrorDialog(context, "Passwords do not match");
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    textStyle: const TextStyle(fontSize: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0)),
+                    backgroundColor:
+                        const Color(0xFFE32626), // Match button color
+                    foregroundColor: Colors.white, // Match button text color
+                  ),
+                  child: const Text(
+                    "Definir nova senha",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                "Need Help | FAQ | Terms Of Use", // Match bottom text
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -155,7 +407,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: Color(0xFFE32626),
+        ),
       ),
     );
   }
@@ -164,12 +418,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
-        content: Text(message),
+        backgroundColor: Colors.grey[900],
+        title: const Text(
+          'Error',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -180,12 +444,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          title,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),

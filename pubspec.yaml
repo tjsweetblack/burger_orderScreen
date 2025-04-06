@@ -45,9 +45,22 @@ dependencies:
   rive: ^0.13.4
   device_preview: ^1.2.0
   carousel_slider: ^5.0.0
-  printing: ^5.14.0
-  pdf: ^3.11.2
+  provider: ^6.0.0
+  rxdart: ^0.27.7
+  flutter_launcher_icons: ^0.13.1 # Use the latest version
+  smooth_page_indicator: ^1.1.0 
+  shared_preferences: ^2.5.2
+  latlong2: ^0.9.1
+  geocoding: ^3.0.0
+  http: ^1.2.0
+  flutter_map: ^8.1.1
+  camera: ^0.11.1
+  geolocator: ^13.0.4
   url_launcher: ^6.3.1
+  google_generative_ai: ^0.4.6
+  webview_flutter: ^4.10.0
+  vector_math: ^2.1.4
+  universal_html: ^2.2.4
 
 dev_dependencies:
   flutter_lints: ^5.0.0
@@ -69,6 +82,7 @@ flutter:
     - assets/images/
     - assets/svgs/
     - assets/images/logo/
+    - assets/i18n/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
   # For details regarding adding assets from package dependencies, see
@@ -92,3 +106,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_icons:
+  android: true # Set to false to disable Android icon generation
+  ios: true     # Set to false to disable iOS icon generation
+  image_path: "assets/icon/icon.png" # Path to your 512x512 px icon
+  min_sdk_android: 21 # Specify minimum Android SDK (optional, defaults to 21)
+  # adaptive_icon_background: "assets/images/android12_background.png" # Background image for adaptive icons (Android 8.0+)
+  # adaptive_icon_foreground: "assets/images/android12_foreground.png" # Foreground image for adaptive icons (Android 8.0+)
+  # remove_alpha_ios: true # Remove alpha channel for iOS icons (optional, defaults to false)

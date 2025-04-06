@@ -122,17 +122,28 @@ class AuthCubit extends Cubit<AuthState> {
 
       User? user = userCredential.user;
       if (user != null) {
+        // Create a new cart document
+        DocumentReference cartDocRef = _firestore.collection('cart').doc();
+        await cartDocRef.set({
+          'items': [], // Initialize with an empty items array
+          'userId': user.uid, // Add user ID to cart for reference
+          'cartTotalPrice': 0.0, // Initialize cart total price
+          'dateCreated': FieldValue.serverTimestamp(), // Add timestamp
+        });
+
         await _firestore.collection('users').doc(user.uid).set({
           'uid': user.uid,
           'name': name,
           'email': user.email,
-          'phoneNumber': phoneNumber, // Added phone number here
+          'phoneNumber': phoneNumber,
           'createdAt': FieldValue.serverTimestamp(),
           'lastLogin': 0,
           'role': 'user', // Default role
+          'cart': cartDocRef.id,
+          'favorites': [], // Initialize with an empty favorites array
+          // Add cart ID to user document
         });
       }
-      await _auth.signOut();
       emit(UserSingupButNotVerified());
     } catch (e) {
       emit(AuthError(e.toString()));
