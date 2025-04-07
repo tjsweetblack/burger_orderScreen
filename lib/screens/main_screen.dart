@@ -19,10 +19,9 @@ class MapZzzPage extends StatefulWidget {
 class _MapZzzPageState extends State<MapZzzPage> {
   final LatLng belasLuanda = LatLng(-8.9036, 13.2489);
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final MapController _mapController =
-      MapController(); // Initialize MapController here
+  final MapController _mapController = MapController();
   Map<String, dynamic>? _selectedReport;
-  String? _selectedReportId; // To track selected report
+  String? _selectedReportId;
 
   void _recenterMapToUser() async {
     final Position position = await _getCurrentLocation();
@@ -52,6 +51,16 @@ class _MapZzzPageState extends State<MapZzzPage> {
     }
 
     return await Geolocator.getCurrentPosition();
+  }
+
+  void _zoomInMap() {
+    final currentZoom = _mapController.camera.zoom;
+    _mapController.move(_mapController.camera.center, currentZoom + 1);
+  }
+
+  void _zoomOutMap() {
+    final currentZoom = _mapController.camera.zoom;
+    _mapController.move(_mapController.camera.center, currentZoom - 1);
   }
 
   @override
@@ -97,11 +106,9 @@ class _MapZzzPageState extends State<MapZzzPage> {
       ),
       drawer: buildAppDrawer(context),
       body: Row(
-        // Use Row to place reports on the left
         children: [
           Container(
-            width: MediaQuery.of(context).size.width *
-                0.3, // Set width for reports
+            width: MediaQuery.of(context).size.width * 0.3,
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
@@ -130,10 +137,9 @@ class _MapZzzPageState extends State<MapZzzPage> {
                 else
                   Expanded(
                     child: ReportList(onReportSelected: (reportId, reportData) {
-                      // Receive report ID
                       setState(() {
-                        _selectedReport = reportData; // update report
-                        _selectedReportId = reportId; // Store the report ID
+                        _selectedReport = reportData;
+                        _selectedReportId = reportId;
                       });
                     }),
                   ),
@@ -141,75 +147,41 @@ class _MapZzzPageState extends State<MapZzzPage> {
             ),
           ),
           Expanded(
-            // Take up remaining space for the map
             child: Stack(
               children: [
                 MapWidget(
                   mapController: _mapController,
-                  selectedReportId:
-                      _selectedReportId, // Pass the selected report ID
+                  selectedReportId: _selectedReportId,
                   onReportSelected: (reportId, reportData, lat, lon) {
                     setState(() {
-                      _selectedReport =
-                          reportData; // Update the selected report data.
-                      _selectedReportId = reportId; // Store the report ID
+                      _selectedReport = reportData;
+                      _selectedReportId = reportId;
                     });
-                    // Center map on selected report
                     if (lat != null && lon != null) {
-                      _mapController.move(
-                          LatLng(lat, lon), 17.0); // Zoom level 17
+                      _mapController.move(LatLng(lat, lon), 17.0);
                     }
                   },
                 ),
                 Positioned(
-                  bottom: 200,
+                  bottom: 16, // Adjust position as needed
                   right: 16,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      SizedBox(height: 8),
                       GestureDetector(
-                        onTap: () async {
-                          if (html.window != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Phone call functionality not implemented in web.')),
-                            );
-                          } else {
-                            final Uri phoneUri =
-                                Uri(scheme: 'tel', path: '111');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Phone call functionality not implemented in this version.')),
-                            );
-                          }
-                        },
+                        onTap: _zoomInMap,
                         child: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            child: Icon(Icons.call, color: Colors.red)),
+                          backgroundColor: Colors.white,
+                          child: Icon(Icons.add, color: Colors.red),
+                        ),
                       ),
                       SizedBox(height: 8),
                       GestureDetector(
-                        onTap: _recenterMapToUser,
+                        onTap: _zoomOutMap,
                         child: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            child: Icon(Icons.location_pin, color: Colors.red)),
-                      ),
-                      SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CreateReportCameraScreen(),
-                            ),
-                          );
-                        },
-                        child: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            child: Icon(Icons.camera_alt, color: Colors.red)),
+                          backgroundColor: Colors.white,
+                          child: Icon(Icons.remove, color: Colors.red),
+                        ),
                       ),
                     ],
                   ),
@@ -296,8 +268,8 @@ class _ReportListState extends State<ReportList> {
       itemCount: _reports.length,
       itemBuilder: (context, index) {
         final report = _reports[index];
-        final reportId =
-            report['id']; // Assuming you have an 'id' field in your report data
+        final reportId = report['id'];
+        final isFixed = report['status'] == 'fixed';
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: InkWell(
@@ -307,49 +279,61 @@ class _ReportListState extends State<ReportList> {
               widget.onReportSelected(
                 reportId,
                 report,
-              ); // Pass the ID here
+              );
             },
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Image.network(
-                    report['imageUrl'],
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: Icon(Icons.error_outline),
-                      );
-                    },
+            child: Container(
+              decoration: BoxDecoration(
+                color: isFixed
+                    ? Colors.red.withOpacity(0.15)
+                    : null, // Light red with 50% opacity (0.5)
+                borderRadius:
+                    BorderRadius.circular(4), // Optional: Add rounded corners
+              ),
+              padding: const EdgeInsets.all(
+                  8.0), // Optional: Add some padding inside the colored container
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Image.network(
+                      report['imageUrl'],
+                      height: 50,
+                      width: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: Icon(Icons.error_outline),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        report['title'],
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        report['location'],
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          report['title'],
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          report['location'],
+                          style:
+                              TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: _buildRiskLevelIcons(report['riskLevel'] as int),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: _buildRiskLevelIcons(report['riskLevel'] as int),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -379,7 +363,7 @@ class _MapWidgetState extends State<MapWidget> {
   LatLng? _currentLocation;
   bool _locationFetched = false;
   final double heatmapRadiusKm = 0.3;
-  String? _selectedMarkerId; // Local state to track selected marker
+  String? _selectedMarkerId;
 
   @override
   void initState() {
@@ -394,13 +378,11 @@ class _MapWidgetState extends State<MapWidget> {
         _currentLocation = LatLng(position.latitude, position.longitude);
         _locationFetched = true;
       });
-      widget.mapController.move(_currentLocation!, 15.0); // Initial zoom
+      widget.mapController.move(_currentLocation!, 15.0);
     } catch (e) {
       print("Error getting location: $e");
-      // Handle error appropriately, maybe show a default location
       setState(() {
-        _currentLocation = LatLng(-8.913499751058776,
-            13.18721354420165); // Default to Belas if location fails
+        _currentLocation = LatLng(-8.913499751058776, 13.18721354420165);
         _locationFetched = true;
       });
       widget.mapController.move(_currentLocation!, 13.0);
@@ -439,26 +421,10 @@ class _MapWidgetState extends State<MapWidget> {
   ) {
     return ColorFiltered(
       colorFilter: const ColorFilter.matrix(<double>[
-        0.15,
-        0.50,
-        0.05,
-        0,
-        0,
-        0.15,
-        0.50,
-        0.05,
-        0,
-        0,
-        0.15,
-        0.50,
-        0.05,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
+        0.15, 0.50, 0.05, 0, 0, //
+        0.15, 0.50, 0.05, 0, 0, //
+        0.15, 0.50, 0.05, 0, 0, //
+        0, 0, 0, 1, 0, //
       ]),
       child: tileWidget,
     );
@@ -471,8 +437,8 @@ class _MapWidgetState extends State<MapWidget> {
             key: UniqueKey(),
             mapController: widget.mapController,
             options: MapOptions(
-              initialCenter: _currentLocation!, // Use the fetched location
-              initialZoom: 15.0, // Increased initial zoom
+              initialCenter: _currentLocation!,
+              initialZoom: 15.0,
               interactionOptions: InteractionOptions(
                 flags: InteractiveFlag.all,
                 cursorKeyboardRotationOptions:
@@ -490,8 +456,7 @@ class _MapWidgetState extends State<MapWidget> {
               MarkerLayer(
                 markers: [
                   Marker(
-                    point:
-                        _currentLocation!, // Use the fetched location for the marker
+                    point: _currentLocation!,
                     width: 30,
                     height: 30,
                     child: const Icon(
@@ -514,7 +479,6 @@ class _MapWidgetState extends State<MapWidget> {
                   final List<Map<String, dynamic>> reports =
                       snapshot.data!.docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
-                    // Include the document ID in the report data
                     return {'id': doc.id, ...data};
                   }).toList();
 
@@ -544,8 +508,8 @@ class _MapWidgetState extends State<MapWidget> {
                           height: markerSize,
                           child: GestureDetector(
                             onTap: () {
-                              widget.onReportSelected(reportId, report,
-                                  latitude, longitude); // Pass the ID here
+                              widget.onReportSelected(
+                                  reportId, report, latitude, longitude);
                               setState(() {
                                 _selectedMarkerId = reportId;
                               });
@@ -658,8 +622,6 @@ class _MapWidgetState extends State<MapWidget> {
               ),
             ],
           )
-        : Center(
-            child:
-                CircularProgressIndicator()); // Show loading while fetching location
+        : Center(child: CircularProgressIndicator());
   }
 }

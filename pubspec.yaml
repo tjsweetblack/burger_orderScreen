@@ -61,6 +61,12 @@ dependencies:
   webview_flutter: ^4.10.0
   vector_math: ^2.1.4
   universal_html: ^2.2.4
+  pdf: ^3.11.3
+  path_provider: ^2.1.5
+  open_file: ^3.5.10
+  image: ^4.5.4
+
+
 
 dev_dependencies:
   flutter_lints: ^5.0.0
@@ -82,6 +88,7 @@ flutter:
     - assets/images/
     - assets/svgs/
     - assets/images/logo/
+    - assets/fonts/
     - assets/i18n/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
