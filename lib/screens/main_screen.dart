@@ -470,10 +470,13 @@ class _MapWidgetState extends State<MapWidget> {
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('reports')
+                    .where('status',
+                        isEqualTo:
+                            'active') // Only fetch reports with status 'active'
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   }
 
                   final List<Map<String, dynamic>> reports =
@@ -622,6 +625,6 @@ class _MapWidgetState extends State<MapWidget> {
               ),
             ],
           )
-        : Center(child: CircularProgressIndicator());
+        : const Center(child: CircularProgressIndicator());
   }
 }

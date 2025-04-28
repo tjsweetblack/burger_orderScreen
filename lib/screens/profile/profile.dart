@@ -1,18 +1,15 @@
-import 'package:auth_bloc/logic/cubit/auth_cubit.dart';
-import 'package:auth_bloc/routing/routes.dart';
-import 'package:auth_bloc/screens/profile/rewards.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import for FirebaseAuth
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+class ProfileForm extends StatefulWidget {
+  const ProfileForm({super.key});
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  _ProfileFormState createState() => _ProfileFormState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileFormState extends State<ProfileForm> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _usernameController;
@@ -20,15 +17,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController _phoneController;
 
   bool _isUpdating = false;
+  late User? _user; // Add User variable
+  late bool _isLoading;
 
   @override
   void initState() {
     super.initState();
+    _isLoading = true; //start loading
     _firstNameController = TextEditingController();
     _lastNameController = TextEditingController();
     _usernameController = TextEditingController();
     _emailController = TextEditingController();
     _phoneController = TextEditingController();
+    _initializeData(); //initialize data in init state
+  }
+
+  Future<void> _initializeData() async {
+    _user = FirebaseAuth.instance.currentUser; //get current user.
+    if (_user != null) {
+      try {
+        //get user data from firestore
+        DocumentSnapshot<Map<String, dynamic>> snapshot =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(_user!.uid)
+                .get();
+
+        if (snapshot.exists) {
+          var userData = snapshot.data() as Map<String, dynamic>;
+          _firstNameController.text = userData['name']?.split(' ').first ?? '';
+          _lastNameController.text = userData['name']?.split(' ').last ?? '';
+          _usernameController.text = userData['username'] ?? '';
+          _emailController.text = userData['email'] ?? '';
+          _phoneController.text = userData['phoneNumber'] ?? '';
+        }
+      } catch (e) {
+        //handle error
+        print("Error fetching user data: $e");
+        //show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load profile data: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading =
+                false; //set loading to false whether or not the data loads
+          });
+        }
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -41,241 +90,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  // Placeholder function for updating profile information
   void _updateProfile(String userId) async {
-    setState(() => _isUpdating = true);
+    setState(() {
+      _isUpdating = true;
+    });
+
     try {
-      // Simulate an update process
-      await Future.delayed(const Duration(seconds: 2));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            backgroundColor: Colors.grey,
-            content: Text('Profile updated successfully!',
-                style: TextStyle(color: Colors.white))),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            backgroundColor: Colors.grey,
-            content: Text('Error updating profile: $e',
-                style: TextStyle(color: Colors.white))),
-      );
+      // Get the updated values from the text controllers
+      Map<String, dynamic> updatedData = {
+        'name': '${_firstNameController.text} ${_lastNameController.text}',
+        'username': _usernameController.text,
+        'email': _emailController.text,
+        'phoneNumber': _phoneController.text,
+        // Add other fields as necessary
+      };
+
+      // Update the user data in Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update(updatedData);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update profile: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      print('Error updating profile: $error');
     } finally {
-      setState(() => _isUpdating = false);
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authCubit = context.watch<AuthCubit>();
-    final user = authCubit.currentUser;
-
-    if (user == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Profile")),
-        body: const Center(
-            child: Text("No user logged in", style: TextStyle(fontSize: 18))),
-      );
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator()); //show loading
     }
-
-    return Scaffold(
-      backgroundColor: Colors.white, // White background
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back,
-              color: Colors.black), // Black back arrow
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        title: const Text('',
-            style: TextStyle(color: Colors.black)), // Empty title
-        centerTitle: false,
-      ),
-      body: FutureBuilder<DocumentSnapshot>(
-        future:
-            FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: CircularProgressIndicator(
-                    color: Colors.black)); // Black indicator
-          }
-          if (snapshot.hasError) {
-            return Center(
-                child: Text('Error: ${snapshot.error}',
-                    style: const TextStyle(color: Colors.black))); // Black text
-          }
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(
-                child: Text('No user data found.',
-                    style: TextStyle(color: Colors.black))); // Black text
-          }
-
-          var userData = snapshot.data!.data() as Map<String, dynamic>;
-          _firstNameController.text = userData['name']?.split(' ').first ?? '';
-          _lastNameController.text = userData['name']?.split(' ').last ?? '';
-          _usernameController.text = userData['username'] ?? '';
-          _emailController.text = userData['email'] ?? '';
-          _phoneController.text = userData['phoneNumber'] ?? '';
-
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundImage: NetworkImage(
-                            userData['photoURL'] ??
-                                'https://cdn4.iconfinder.com/data/icons/glyphs/24/icons_user-512.png',
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.red,
-                            border: Border.all(color: Colors.white, width: 1),
-                          ),
-                          padding: const EdgeInsets.all(4.0),
-                          child: const Icon(Icons.edit,
-                              color: Colors.white, size: 16),
-                        ),
-                      ],
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildTextField("First Name", _firstNameController,
+                    labelTextColor: Colors.black87),
+                _buildTextField("Last Name", _lastNameController,
+                    labelTextColor: Colors.black87),
+                _buildTextField("Username", _usernameController,
+                    labelTextColor: Colors.black87),
+                _buildTextField("Email", _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    labelTextColor: Colors.black87),
+                _buildTextField("Phone Number", _phoneController,
+                    keyboardType: TextInputType.phone,
+                    prefixText: '+234 ▼ ',
+                    suffixIcon: const Icon(Icons.arrow_drop_down,
+                        color: Colors.black87),
+                    labelTextColor: Colors.black87),
+                _buildDropdown("Birthday", const [''],
+                    labelTextColor: Colors.black87),
+                _buildDropdown("Gender", const [''],
+                    labelTextColor: Colors.black87),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _isUpdating
+                      ? null
+                      : () {
+                          _updateProfile(_user!.uid);
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Center(
-                    child: Text(
-                      'Caçador de Mosquitos', // Replace with actual user role if available
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                    child: LinearProgressIndicator(
-                      value: 0.7, // Example progress value
-                      backgroundColor: Colors.grey[300],
-                      valueColor:
-                          const AlwaysStoppedAnimation<Color>(Colors.red),
-                      minHeight: 6,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.star_border, color: Colors.black, size: 16),
-                        SizedBox(width: 4),
-                        Text('+30 pontos',
-                            style:
-                                TextStyle(color: Colors.black, fontSize: 14)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => RewardsPage()));
-                      },
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.redeem, color: Colors.red, size: 16),
-                          SizedBox(width: 4),
-                          Text('Reivindicar prêmios',
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 14)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildTextField("Primeiro nome", _firstNameController,
-                      labelTextColor: Colors.black87),
-                  _buildTextField("Sobrenome", _lastNameController,
-                      labelTextColor: Colors.black87),
-                  _buildTextField("Nome de usuário", _usernameController,
-                      labelTextColor: Colors.black87),
-                  _buildTextField("Email", _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      labelTextColor: Colors.black87),
-                  _buildTextField("Número de telefone", _phoneController,
-                      keyboardType: TextInputType.phone,
-                      prefixText: '+234 ▼ ', // Added prefix
-                      suffixIcon: const Icon(Icons.arrow_drop_down,
-                          color: Colors.black87),
-                      labelTextColor: Colors.black87),
-                  _buildDropdown("Aniversário", const [''],
-                      labelTextColor: Colors.black87), // Add actual items
-                  _buildDropdown("Gênero", const [''],
-                      labelTextColor: Colors.black87), // Add actual items
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed:
-                        _isUpdating ? null : () => _updateProfile(user.uid),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        // Rounded button
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    child: _isUpdating
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.lock, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text('Alterar a senha',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16)),
-                            ],
-                          ),
-                  ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: TextButton(
-                      onPressed: () async {
-                        await authCubit.signOut();
-                        if (context.mounted) {
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                            Routes.loginScreen,
-                            (route) => false,
-                          );
-                        }
-                      },
-                      child: const Text(
-                        'Logout',
-                        style: TextStyle(color: Colors.black87, fontSize: 16),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                  child: _isUpdating
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Update Profile',
+                          style: TextStyle(color: Colors.white, fontSize: 16)),
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -299,11 +217,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           prefixStyle: const TextStyle(color: Colors.black),
           enabledBorder: OutlineInputBorder(
             borderSide: const BorderSide(color: Colors.black38),
-            borderRadius: BorderRadius.circular(5), // Rounded corners
+            borderRadius: BorderRadius.circular(5),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(color: Colors.black),
-            borderRadius: BorderRadius.circular(5), // Rounded corners
+            borderRadius: BorderRadius.circular(5),
           ),
         ),
       ),
@@ -327,10 +245,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(
               border: Border.all(color: Colors.black38),
               borderRadius: BorderRadius.circular(5),
-              color: Colors.white, // White background for dropdown container
+              color: Colors.white,
             ),
             child: DropdownButtonFormField<String>(
-              value: null, // Set to null initially
+              value: null,
               items: items.map((String item) {
                 return DropdownMenuItem<String>(
                   value: item,
@@ -341,7 +259,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onChanged: (String? newValue) {
                 // Handle dropdown changes
               },
-              dropdownColor: Colors.white, // White background for dropdown menu
+              dropdownColor: Colors.white,
               style: const TextStyle(color: Colors.black),
               decoration: const InputDecoration(
                 border: InputBorder.none,

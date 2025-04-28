@@ -20,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Set background color to white
+      backgroundColor: Colors.white,
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthLoading) {
@@ -32,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.pop(context);
             Navigator.pushNamedAndRemoveUntil(
               context,
-              Routes.mainScreen, //change here
+              Routes.mainScreen,
               (route) => false,
             );
           } else if (state is UserNotVerified) {
@@ -54,146 +54,126 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildLoginPage(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        // Wrap with SingleChildScrollView
         padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 50), // Add top spacing
-            const Text(
-              "Bem vindo de volta !",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+        child: ConstrainedBox(
+          // Added ConstrainedBox
+          constraints: const BoxConstraints(maxWidth: 400), // Limit the width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 50),
+              const Text(
+                "Bem vindo de volta !",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Vamos fazer login para continuar explorando",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 30),
-            Image.asset('assets/images/logo/logo.png', height: 144),
-            const SizedBox(height: 30),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Email ou telefone",
+              const SizedBox(height: 8),
+              const Text(
+                "Vamos fazer login para continuar explorando",
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                hintText: "Entrar com email",
-                prefixIcon: const Icon(Icons.email_outlined),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+              const SizedBox(height: 30),
+              Image.asset('assets/images/logo/logo.png', height: 144),
+              const SizedBox(height: 30),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Email ou telefone",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: "Entrar com senha",
-                prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: const Icon(Icons.remove_red_eye_outlined),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  hintText: "Entrar com email",
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Checkbox(
-                      value: false, // Replace with your logic
-                      onChanged: (bool? value) {},
-                    ),
-                    const Text(
-                      "Mantenha-me conectado",
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: "Entrar com senha",
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: const Icon(Icons.remove_red_eye_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: false,
+                        onChanged: (bool? value) {},
+                      ),
+                      const Text(
+                        "Mantenha-me conectado",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      context.pushNamed(Routes.forgetScreen);
+                    },
+                    child: const Text(
+                      "Esqueceu a senha?",
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey,
                       ),
                     ),
-                  ],
-                ),
-                TextButton(
-                  onPressed: () {
-                    context.pushNamed(Routes.forgetScreen);
-                  },
-                  child: const Text(
-                    "Esqueceu a senha?",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                context.read<AuthCubit>().signInWithEmail(
-                      _emailController.text,
-                      _passwordController.text,
-                    );
-              },
-              style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(fontSize: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(110.0),
-                  ),
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white),
-              child: const Text(
-                "Entrar",
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ],
               ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Não tem uma conta?",
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    context.pushNamed(Routes.signupScreen);
-                  },
-                  child: const Text(
-                    " Inscreva-se aqui.",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  context.read<AuthCubit>().signInWithEmail(
+                        _emailController.text,
+                        _passwordController.text,
+                      );
+                },
+                style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    textStyle: const TextStyle(fontSize: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(110.0),
                     ),
-                  ),
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white),
+                child: const Text(
+                  "Entrar",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );

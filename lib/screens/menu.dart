@@ -45,23 +45,11 @@ Widget buildAppDrawer(BuildContext context) {
                   context,
                   MaterialPageRoute(
                       builder: (context) =>
-                          const ProfileScreen())); // Close the drawer
+                          const ProfileForm())); // Close the drawer
               // Handle Perfil action
             },
           ),
-          ListTile(
-            leading: Icon(Icons.question_mark_outlined,
-                color: Colors.red), // Using a question mark icon for Quiz
-            title: Text('Quiz', style: TextStyle(color: Colors.red)),
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          MalariaQuizScreen())); // Close the drawer
-              // Handle Quiz action
-            },
-          ),
+          
           ListTile(
             leading: Icon(Icons.article_outlined,
                 color: Colors.red), // Using an article icon for Blog
@@ -75,19 +63,7 @@ Widget buildAppDrawer(BuildContext context) {
               // Handle Blog action
             },
           ),
-          ListTile(
-            leading: Icon(Icons.help_outline,
-                color: Colors.red), // Using a help icon for EPaludismo
-            title: Text('EPaludismo ?', style: TextStyle(color: Colors.red)),
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          const EPaldudismoScreen())); // Close the drawer
-              // Handle EPaludismo action
-            },
-          ),
+          
           ListTile(
             leading: Icon(Icons.logout,
                 color: Colors.red), // Match the icon from the image

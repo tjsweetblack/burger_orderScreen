@@ -64,14 +64,6 @@ class AppRouter {
           ),
         );
 
-      case Routes.profileScreen:
-        return MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: authCubit,
-            child: const ProfileScreen(),
-          ),
-        );
-
       case Routes.mainScreen:
         return MaterialPageRoute(builder: (_) => MapZzzPage());
 

@@ -27,6 +27,7 @@ class BlogPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Blog', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
+        elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -50,68 +51,77 @@ class BlogPage extends StatelessWidget {
                   doc as DocumentSnapshot<Map<String, dynamic>>))
               .toList();
 
-          return ListView.builder(
-            itemCount: blogs.length,
-            itemBuilder: (context, index) {
-              final blog = blogs[index];
-              return Padding(
-                padding: const EdgeInsets.all(8.0), // Overall padding for the list item
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15.0), // Rounded corners
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3), // changes position of shadow
+          return Center(
+            // Added Center widget
+            child: ConstrainedBox(
+              // Added ConstrainedBox
+              constraints:
+                  const BoxConstraints(maxWidth: 800), // Limit the width
+              child: ListView.builder(
+                itemCount: blogs.length,
+                itemBuilder: (context, index) {
+                  final blog = blogs[index];
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.3),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Margin around the container
-                  padding: const EdgeInsets.all(16.0), // Padding inside the container
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10.0),
-                        child: Image.network(
-                          blog.imageUrl,
-                          width: double.infinity,
-                          height: 150,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const SizedBox(
-                              height: 150,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Image.network(
+                              blog.imageUrl,
                               width: double.infinity,
-                              child: Center(
-                                  child: Text('Image could not be loaded')),
-                            );
-                          },
-                        ),
+                              height: 200, // Increased height for web
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return SizedBox(
+                                  height: 200, // Increased height for web
+                                  width: double.infinity,
+                                  child: const Center(
+                                      child: Text('Image could not be loaded')),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 12.0),
+                          Text(
+                            blog.title,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20.0, // Increased font size for web
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 8.0),
+                          Text(
+                            blog.body,
+                            style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 16.0), // Increased font size for web
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12.0), // Increased spacing
-                      Text(
-                        blog.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.0, // Increased font size
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 8.0), // Increased spacing
-                      Text(
-                        blog.body.length > 150
-                            ? '${blog.body.substring(0, 150)}...'
-                            : blog.body,
-                        style: const TextStyle(color: Colors.black87, fontSize: 14.0), // Slightly increased font size
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                    ),
+                  );
+                },
+              ),
+            ),
           );
         },
       ),
