@@ -20,8 +20,6 @@ class AdminStatsScreen extends StatefulWidget {
 }
 
 class _AdminStatsScreenState extends State<AdminStatsScreen> {
-  int _touchedIndex = -1; // For PieChart interactivity
-
   // Define a list of colors for chart sections
   static const List<Color> _chartColors = [
     Colors.blue,
@@ -177,10 +175,8 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
       final status = entry.key;
       final count = entry.value;
 
-      final isTouched = i == _touchedIndex;
-      final fontSize = isTouched ? 17.0 : 13.0; // Adjusted font sizes
-      final radius =
-          isTouched ? 70.0 : 60.0; // Adjusted radius for touch effect
+      const fontSize = 13.0; // Static font size
+      const radius = 60.0; // Static radius
 
       String titleText;
       if (totalValue > 0 && (count / totalValue) < 0.07 && count > 0) {
@@ -207,26 +203,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     return PieChart(
       PieChartData(
         pieTouchData: PieTouchData(
-          touchCallback:
-              (FlTouchEvent event, PieTouchResponse? pieTouchResponse) {
-            // Determine the new index based on the event and response
-            int newTouchedIndex = -1; // Default to no section touched
-
-            if (event.isInterestedForInteractions &&
-                pieTouchResponse != null &&
-                pieTouchResponse.touchedSection != null) {
-              newTouchedIndex =
-                  pieTouchResponse.touchedSection!.touchedSectionIndex;
-            }
-
-            // Only call setState if the touched index has actually changed
-            // This prevents rapid blinking on hover when the hovered section remains the same.
-            if (_touchedIndex != newTouchedIndex) {
-              setState(() {
-                _touchedIndex = newTouchedIndex;
-              });
-            }
-          },
+          enabled: false, // Disable touch interactions
         ),
         borderData: FlBorderData(show: false),
         sectionsSpace: 3, // Adjusted space for a cleaner look
