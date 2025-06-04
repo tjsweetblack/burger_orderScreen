@@ -39,10 +39,8 @@ class CreatePassword extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Create Password',
-                        style: TextStyles.font24Blue700Weight,
-                      ),
+                      Text('Criar Senha',
+                          style: TextStyles.font24Blue700Weight),
                       BlocConsumer<AuthCubit, AuthState>(
                         buildWhen: (previous, current) => previous != current,
                         listenWhen: (previous, current) => previous != current,
@@ -64,8 +62,8 @@ class CreatePassword extends StatelessWidget {
                               context: context,
                               dialogType: DialogType.success,
                               animType: AnimType.rightSlide,
-                              title: 'Sign up Success',
-                              desc: 'You have successfully signed up.',
+                              title: 'Cadastro Realizado com Sucesso',
+                              desc: 'Você se cadastrou com sucesso.',
                             ).show();
                             await Future.delayed(const Duration(seconds: 2));
                             riveHelper.removeAllControllers();

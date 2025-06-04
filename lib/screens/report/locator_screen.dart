@@ -91,7 +91,7 @@ class _LocatorScreenState extends State<LocatorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Localizador da Reportagem'),
+        title: const Text('Localizador da Reportagem'),
       ),
       body: Center(
         child: Column(
@@ -99,7 +99,7 @@ class _LocatorScreenState extends State<LocatorScreen> {
           children: <Widget>[
             Text(
               'Distância: ${_distanceToReport.toStringAsFixed(2)} metros',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
             if (_currentPosition != null)
@@ -107,16 +107,16 @@ class _LocatorScreenState extends State<LocatorScreen> {
                 angle: radians(_bearingToReport),
                 child: Icon(
                   Icons.arrow_upward,
-                  size: 100,
+                  size: 100, // Increased size for better visibility
                   color: Colors.red,
                 ),
               )
             else
-              CircularProgressIndicator(),
+              const CircularProgressIndicator(),
             SizedBox(height: 20),
-            Text(
+            const Text(
               'Apontando para a direção da reportagem',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(fontSize: 16, color: Colors.grey), // Added style
             ),
           ],
         ),

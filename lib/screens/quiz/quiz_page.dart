@@ -197,7 +197,7 @@ class _MalariaQuizScreenState extends State<MalariaQuizScreen> {
   @override
   void initState() {
     super.initState();
-    _shuffleQuestionsList();
+    _shuffleQuestionsList(); // This will be called before _startTimer
     _startTimer();
   }
 
@@ -248,17 +248,17 @@ class _MalariaQuizScreenState extends State<MalariaQuizScreen> {
       barrierDismissible: false, // User must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(isCorrect ? 'Correct!' : 'Wrong!'),
+          title: Text(isCorrect ? 'Correto!' : 'Errado!'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text(isCorrect ? '' : 'The answer was: $correctAnswer'),
+                Text(isCorrect ? '' : 'A resposta era: $correctAnswer'),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Next'),
+              child: const Text('Próximo'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
                 _nextQuestion();
@@ -324,7 +324,7 @@ class _MalariaQuizScreenState extends State<MalariaQuizScreen> {
   Widget build(BuildContext context) {
     if (_shuffledQuestions.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text('Quiz Malaria')),
+        appBar: AppBar(title: Text('Quiz Malária')),
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -334,7 +334,7 @@ class _MalariaQuizScreenState extends State<MalariaQuizScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quiz Malaria'),
+        title: Text('Quiz Malária'),
         automaticallyImplyLeading: false, // To remove the back button
         actions: [
           Padding(

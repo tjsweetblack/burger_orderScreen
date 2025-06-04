@@ -25,7 +25,7 @@ class RewardsPage extends StatelessWidget {
             // Handle back button press
           },
         ),
-        title: Text('Premios'),
+        title: Text('Prémios'),
         centerTitle: true,
       ),
       body: ListView(
@@ -33,7 +33,7 @@ class RewardsPage extends StatelessWidget {
           _buildRewardItem(
             image:
                 'https://www.shopsemlim.com/wp-content/uploads/2020/11/Dragao.jpg',
-            title: 'Caixa de dragao.',
+            title: 'Caixa de Dragão.',
             points: 10,
             buttonText: 'Reivindicado',
             buttonColor: Colors.grey,
@@ -43,7 +43,7 @@ class RewardsPage extends StatelessWidget {
           _buildRewardItem(
             image:
                 'https://www.shopsemlim.com/wp-content/uploads/2020/11/Dragao.jpg',
-            title: 'Caixa de xelto.',
+            title: 'Caixa de Xelto.',
             points: 40,
             buttonText: 'Reivindicar',
             buttonColor: Colors.red,
@@ -113,7 +113,7 @@ class RewardsPage extends StatelessWidget {
                   size: 20.0,
                 ),
                 SizedBox(width: 4.0),
-                Text('pontos necessario: $points pontos'),
+                Text('Pontos necessários: $points pontos'),
               ],
             ),
             SizedBox(height: 16.0),

@@ -2,6 +2,7 @@ import 'package:auth_bloc/screens/blog/blog_screen.dart';
 import 'package:auth_bloc/screens/epaludismo/epaludismo_screen.dart';
 import 'package:auth_bloc/screens/profile/profile.dart';
 import 'package:auth_bloc/screens/quiz/quiz_page.dart';
+import 'package:auth_bloc/screens/stats/stats.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:auth_bloc/logic/cubit/auth_cubit.dart';
@@ -49,7 +50,6 @@ Widget buildAppDrawer(BuildContext context) {
               // Handle Perfil action
             },
           ),
-          
           ListTile(
             leading: Icon(Icons.article_outlined,
                 color: Colors.red), // Using an article icon for Blog
@@ -63,11 +63,22 @@ Widget buildAppDrawer(BuildContext context) {
               // Handle Blog action
             },
           ),
-          
           ListTile(
-            leading: Icon(Icons.logout,
-                color: Colors.red), // Match the icon from the image
-            title: Text('Logout', style: TextStyle(color: Colors.red)),
+            leading: Icon(Icons.assessment,
+                color: Colors.red), 
+            title: Text('Estatísticas', style: TextStyle(color: Colors.red)),
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          const AdminStatsScreen())); // Close the drawer
+              // Handle Blog action
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout, color: Colors.red),
+            title: Text('Sair', style: TextStyle(color: Colors.red)),
             onTap: () async {
               Navigator.pop(context); // Close the drawer
               await context.read<AuthCubit>().signOut();
@@ -85,7 +96,7 @@ Widget buildAppDrawer(BuildContext context) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Estas em',
+                  'Você está em',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 8),

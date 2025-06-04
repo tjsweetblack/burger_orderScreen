@@ -51,7 +51,7 @@ class _mainOnboardingState extends State<mainOnboarding> {
           if (_currentPage < 2) // Show "Skip" only on first two pages
             TextButton(
               onPressed: _navigateToMainApp,
-              child: const Text('Skip',
+              child: const Text('Pular',
                   style: TextStyle(
                       color:
                           Color.fromARGB(255, 58, 56, 56))), // White Skip text
@@ -107,7 +107,7 @@ class _mainOnboardingState extends State<mainOnboarding> {
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
-                      child: const Text("next",
+                      child: const Text("Próximo",
                           style: TextStyle(
                               color: Color.fromARGB(255, 255, 255, 255))),
                     ),

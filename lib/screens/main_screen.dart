@@ -31,17 +31,15 @@ class _MapZzzPageState extends State<MapZzzPage> {
   Future<Position> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
-
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
+      return Future.error('Serviços de localização desativados.');
     }
-
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
+        return Future.error('Permissões de localização negadas');
       }
     }
 
@@ -49,10 +47,9 @@ class _MapZzzPageState extends State<MapZzzPage> {
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
-
     return await Geolocator.getCurrentPosition();
   }
-
+  
   void _zoomInMap() {
     final currentZoom = _mapController.camera.zoom;
     _mapController.move(_mapController.camera.center, currentZoom + 1);
@@ -124,7 +121,7 @@ class _MapZzzPageState extends State<MapZzzPage> {
               children: [
                 SizedBox(height: 16),
                 Text(
-                  'Reportagems',
+                  'Reportagens',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -261,7 +258,7 @@ class _ReportListState extends State<ReportList> {
     }
 
     if (_reports.isEmpty) {
-      return Center(child: Text('No reports found.'));
+      return Center(child: Text('Nenhuma reportagem encontrada.'));
     }
 
     return ListView.builder(
@@ -392,17 +389,15 @@ class _MapWidgetState extends State<MapWidget> {
   Future<Position> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
-
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
+      return Future.error('Serviços de localização desativados.');
     }
-
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
+        return Future.error('Permissões de localização negadas');
       }
     }
 
@@ -410,10 +405,9 @@ class _MapWidgetState extends State<MapWidget> {
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
-
     return await Geolocator.getCurrentPosition();
   }
-
+  
   Widget _greyScaleTileBuilder(
     BuildContext context,
     Widget tileWidget,

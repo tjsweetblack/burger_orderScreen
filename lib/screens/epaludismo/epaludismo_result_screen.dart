@@ -56,7 +56,7 @@ class _MalariaResultScreenState extends State<MalariaResultScreen> {
     final chat = model.startChat(history: [
       Content.multi([
         TextPart(
-            'Based on the following symptoms: "${widget.symptomsDescription}", what is the probability (as a percentage) that the person has malaria? Please give a rough estimate and output the percentage number followed by a very breve explicação em português de por que você deu essa porcentagem (uma ou duas frases curtas) nao fale de nenhuma doenca alem de malaria.'),
+            'Based on the following symptoms: "${widget.symptomsDescription}", what is the probability (as a percentage) that the person has malaria? Please give a rough estimate and output the percentage number followed by a very breve explicação em português de por que você deu essa porcentagem (uma ou duas frases curtas) não fale de nenhuma doença além de malária.'),
       ]),
     ]);
 
@@ -175,7 +175,7 @@ class _MalariaResultScreenState extends State<MalariaResultScreen> {
                       ? 'Aguarde enquanto analisamos os sintomas...'
                       : errorMessage.isNotEmpty
                           ? errorMessage
-                          : 'o Paciente tem $probabilityResult chance de ter paludismo .',
+                          : 'O paciente tem $probabilityResult de chance de ter paludismo.',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 18,
@@ -201,7 +201,7 @@ class _MalariaResultScreenState extends State<MalariaResultScreen> {
               const SizedBox(height: 10),
               const Center(
                 child: Text(
-                  '" Não é um substituto para aconselhamento médico profissional ou tratamento .',
+                  '"Não é um substituto para aconselhamento médico profissional ou tratamento."',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -218,7 +218,8 @@ class _MalariaResultScreenState extends State<MalariaResultScreen> {
                     await launchUrl(phoneUri);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Could not launch phone.')),
+                      const SnackBar(
+                          content: Text('Não foi possível ligar.')),
                     );
                   }
                 },
@@ -230,7 +231,7 @@ class _MalariaResultScreenState extends State<MalariaResultScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Contancto de emergencia',
+                  'Contacto de emergência',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
@@ -247,7 +248,7 @@ class _MalariaResultScreenState extends State<MalariaResultScreen> {
                   ),
                 ),
                 child: const Text(
-                  'ver hospital mais proximo',
+                  'Ver hospital mais próximo',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
@@ -264,7 +265,7 @@ class _MalariaResultScreenState extends State<MalariaResultScreen> {
                   ),
                 ),
                 child: const Text(
-                  'voltar ao inicio .',
+                  'Voltar ao início.',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),

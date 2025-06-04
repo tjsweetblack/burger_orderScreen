@@ -13,7 +13,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart'; // Assuming this is needed for location
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:workmanager/workmanager.dart'; // Import workmanager if needed for background tasks
 import 'routing/app_router.dart';
 import 'routing/routes.dart';
 import 'theming/colors.dart';

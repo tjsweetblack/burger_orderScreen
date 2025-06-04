@@ -34,14 +34,13 @@ class BlogPage extends StatelessWidget {
         stream: FirebaseFirestore.instance.collection('blog').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text('Something went wrong'));
+            return const Center(child: Text('Algo deu errado'));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
                 child: CircularProgressIndicator(color: Colors.black));
           }
-
           if (!snapshot.hasData) {
             return const Center(child: Text('No blogs found'));
           }
@@ -94,7 +93,7 @@ class BlogPage extends StatelessWidget {
                                   height: 200, // Increased height for web
                                   width: double.infinity,
                                   child: const Center(
-                                      child: Text('Image could not be loaded')),
+                                      child: Text('Não foi possível carregar a imagem')),
                                 );
                               },
                             ),

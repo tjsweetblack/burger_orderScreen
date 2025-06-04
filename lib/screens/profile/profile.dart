@@ -58,7 +58,7 @@ class _ProfileFormState extends State<ProfileForm> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to load profile data: $e'),
+              content: Text('Falha ao carregar dados do perfil: $e'),
               backgroundColor: Colors.red,
             ),
           );
@@ -114,7 +114,7 @@ class _ProfileFormState extends State<ProfileForm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Profile updated successfully!'),
+            content: Text('Perfil atualizado com sucesso!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -123,7 +123,7 @@ class _ProfileFormState extends State<ProfileForm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update profile: $error'),
+            content: Text('Falha ao atualizar perfil: $error'),
             backgroundColor: Colors.red,
           ),
         );
@@ -152,22 +152,22 @@ class _ProfileFormState extends State<ProfileForm> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildTextField("First Name", _firstNameController,
+                _buildTextField("Nome", _firstNameController,
                     labelTextColor: Colors.black87),
-                _buildTextField("Last Name", _lastNameController,
+                _buildTextField("Sobrenome", _lastNameController,
                     labelTextColor: Colors.black87),
-                _buildTextField("Username", _usernameController,
+                _buildTextField("Nome de Usuário", _usernameController,
                     labelTextColor: Colors.black87),
                 _buildTextField("Email", _emailController,
                     keyboardType: TextInputType.emailAddress,
                     labelTextColor: Colors.black87),
-                _buildTextField("Phone Number", _phoneController,
+                _buildTextField("Número de Telefone", _phoneController,
                     keyboardType: TextInputType.phone,
                     prefixText: '+234 ▼ ',
                     suffixIcon: const Icon(Icons.arrow_drop_down,
                         color: Colors.black87),
                     labelTextColor: Colors.black87),
-                _buildDropdown("Birthday", const [''],
+                _buildDropdown("Data de Nascimento", const [''],
                     labelTextColor: Colors.black87),
                 _buildDropdown("Gender", const [''],
                     labelTextColor: Colors.black87),
@@ -187,7 +187,7 @@ class _ProfileFormState extends State<ProfileForm> {
                   ),
                   child: _isUpdating
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Update Profile',
+                      : const Text('Atualizar Perfil',
                           style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
               ],

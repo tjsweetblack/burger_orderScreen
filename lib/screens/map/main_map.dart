@@ -49,17 +49,15 @@ class _MapWidgetState extends State<MapWidget> {
   Future<Position> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
-
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
+      return Future.error('Serviços de localização desativados.');
     }
-
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
+        return Future.error('Permissões de localização negadas');
       }
     }
 
@@ -67,10 +65,9 @@ class _MapWidgetState extends State<MapWidget> {
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
-
     return await Geolocator.getCurrentPosition();
   }
-
+  
   final double heatmapRadiusKm = 0.3;
 
   Widget _greyScaleTileBuilder(

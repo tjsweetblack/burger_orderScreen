@@ -42,9 +42,7 @@ class OnboardingPage extends StatelessWidget {
             description,
             textAlign: TextAlign.center,
             style: const TextStyle(
-                fontSize: 16,
-                color: Color.fromARGB(255, 255, 255,
-                    255)), // Slightly less opaque white for description
+                fontSize: 16, color: Colors.black54),
           ),
         ],
       ),

@@ -42,7 +42,7 @@ class _EPaldudismoScreenState extends State<EPaldudismoScreen> {
           children: [
             const SizedBox(height: 30), // Increased spacing
             const Text(
-              'Datalhe os sintomas do paciente e receba a probalidade de malaria',
+              'Detalhe os sintomas do paciente e receba a probabilidade de malária',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18, // Slightly reduced font size
@@ -72,8 +72,7 @@ class _EPaldudismoScreenState extends State<EPaldudismoScreen> {
                 maxLines: 5, // Set a specific maxLines to control height
                 decoration: const InputDecoration(
                   border: InputBorder.none,
-                  hintText:
-                      'Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in', // Placeholder text as in the image
+                  hintText: 'Descreva os sintomas aqui... (Ex: febre alta, calafrios, dor de cabeça, etc.)', // Placeholder text as in the image
                   hintStyle: TextStyle(color: Colors.grey),
                 ),
                 style: const TextStyle(color: Colors.black87),

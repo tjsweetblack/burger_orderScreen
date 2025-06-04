@@ -49,11 +49,11 @@ class _PasswordResetState extends State<PasswordReset> {
         emailController.text = email;
 
         if (email.isEmpty) {
-          return 'Please enter an email address';
+          return 'Por favor, insira um endereço de e-mail';
         }
 
         if (!AppRegex.isEmailValid(email)) {
-          return 'Please enter a valid email address';
+          return 'Por favor, insira um endereço de e-mail válido';
         }
       },
       controller: emailController,
@@ -62,7 +62,7 @@ class _PasswordResetState extends State<PasswordReset> {
 
   AppTextButton resetButton() {
     return AppTextButton(
-      buttonText: 'Reset',
+      buttonText: 'Redefinir',
       textStyle: TextStyles.font16White600Weight,
       onPressed: () {
         if (formKey.currentState!.validate()) {

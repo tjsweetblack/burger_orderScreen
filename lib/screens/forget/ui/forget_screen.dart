@@ -35,13 +35,13 @@ class _ForgetScreenState extends State<ForgetScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Reset',
+                              'Redefinir',
                               style: TextStyles.font24Blue700Weight.copyWith(
                                   color: Colors.white), // White Reset text
                             ),
                             Gap(10.h),
                             Text(
-                              "Enter email to reset password",
+                              "Digite o email para redefinir a senha",
                               style: TextStyles.font14Grey400Weight.copyWith(
                                   color: Colors.white70), // Lighter white text
                             ),
@@ -64,8 +64,8 @@ class _ForgetScreenState extends State<ForgetScreen> {
                             showSuccessDialog(
                               // Use the new Success Dialog
                               context,
-                              'Reset Password Email Sent!',
-                              'A password reset link has been sent to your email. Please check your inbox and follow the instructions to reset your password.',
+                              'Email de Redefinição de Senha Enviado!',
+                              'Um link para redefinição de senha foi enviado para o seu email. Por favor, verifique sua caixa de entrada e siga as instruções para redefinir sua senha.',
                             );
                           }
                         },
@@ -205,7 +205,7 @@ class _PasswordResetThemedState extends State<PasswordResetThemed> {
             foregroundColor: Colors.black, // Black button text
           ),
           child: const Text(
-            "Reset Password",
+            "Redefinir Senha",
             style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold), // Black button text
@@ -232,14 +232,14 @@ class TermsAndConditionsTextThemed extends StatelessWidget {
             color: Colors.white70, // White terms and conditions text
           ),
           children: const [
-            TextSpan(text: 'By continue, you agree to our\n'),
+            TextSpan(text: 'Ao continuar, você concorda com nossos\n'),
             TextSpan(
-              text: 'Terms of Service',
+              text: 'Termos de Serviço',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            TextSpan(text: ' and '),
+            TextSpan(text: ' e '),
             TextSpan(
-              text: 'Privacy Policy',
+              text: 'Política de Privacidade',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
@@ -257,8 +257,8 @@ class AlreadyHaveAccountTextThemed extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          "Don't have an account?",
+        Text(
+          "Não tem uma conta?",
           style: TextStyle(
               color: Colors.white70), // White "Don't have an account?" text
         ),
@@ -267,7 +267,7 @@ class AlreadyHaveAccountTextThemed extends StatelessWidget {
             context.pop();
           },
           child: Text(
-            "Sign In",
+            "Entrar",
             style: TextStyles.font14Blue400Weight.copyWith(
               fontSize: 14,
               fontWeight: FontWeight.bold,

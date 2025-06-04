@@ -9,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:universal_html/html.dart' as html;
 import 'package:flutter/services.dart'; // Make sure this is imported
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:url_launcher/url_launcher.dart'; // Import for launching URLs
 import 'package:image/image.dart' as img; // For loading fonts
 
 class ReportDetailPage extends StatefulWidget {
@@ -63,14 +64,13 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
       if (userDoc.exists) {
         setState(() {
           _userName = userDoc.data()?['name'];
-          _isLoadingUser = false;
         });
       } else {
         setState(() {
-          _userName = 'Unknown User';
-          _isLoadingUser = false;
+          _userName = 'Usuário Desconhecido';
         });
       }
+      _isLoadingUser = false;
     } catch (e) {
       print("Error fetching user name: $e");
       setState(() {
@@ -249,7 +249,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
 
       // Show a success message
       _showSuccessDialog(
-          "Report status updated and relatório criado com sucesso!");
+          "Status da reportagem atualizado e relatório criado com sucesso!");
     } catch (e) {
       // Handle any errors
       print("Error updating report status or creating PDF: $e");
@@ -296,13 +296,15 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
         pw.Text('Descrição:',
             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
         pw.Text(widget.report['description'] ?? 'Nenhuma descrição fornecida.'),
-        pw.SizedBox(height: 10),
+        pw.SizedBox(height: 10), // Added space
         pw.Text('Solução sugerida pela IA:',
             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-        pw.Text(widget.report['solutionAi'] ?? 'Nenhuma solução fornecida.'),
+        pw.Text(widget.report['solutionAi'] ??
+            'Nenhuma solução fornecida.'), // Added space
         pw.SizedBox(height: 10),
         pw.Text('Solução do usuário:',
-            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+            style: pw.TextStyle(
+                fontSize: 16, fontWeight: pw.FontWeight.bold)), // Added space
         pw.Text(userSolution),
       ],
     ));
@@ -395,7 +397,25 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                   SizedBox(height: 8),
                   TextButton(
                     onPressed: () {
-// Implement "Ver no mapa" functionality
+                      // Assuming your report map contains 'latitude' and 'longitude'
+                      final latitude = widget.report['latitude'];
+                      final longitude = widget.report['longitude'];
+
+                      if (latitude != null && longitude != null) {
+                        final Uri googleMapsUrl = Uri.parse(
+                            'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
+                        canLaunchUrl(googleMapsUrl).then((canLaunch) {
+                          if (canLaunch) {
+                            launchUrl(googleMapsUrl);
+                          } else {
+                            _showErrorDialog(
+                                'Erro', 'Não foi possível abrir o mapa.');
+                          }
+                        });
+                      } else {
+                        _showErrorDialog('Erro',
+                            'Localização não disponível para esta denúncia.');
+                      }
                     },
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.red,
@@ -451,15 +471,16 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                   Text('Descrição:',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
+                  SizedBox(height: 8), // Added space
                   Text(widget.report['description'] ??
-                      'No description provided.'),
-                  SizedBox(height: 16),
+                      'Nenhuma descrição fornecida.'),
+                  SizedBox(height: 16), // Added space
                   Text('Solução criada por IA:',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
-                  Text(widget.report['solutionAi'] ?? 'No solution provided.'),
+                  SizedBox(height: 8), // Added space
+                  Text(widget.report['solutionAi'] ??
+                      'Nenhuma solução fornecida.'),
                   SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,

@@ -94,7 +94,7 @@ class _CreateReportCameraScreenState extends State<CreateReportCameraScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        'Tire foto do risco .',
+                        'Tire uma foto do risco.',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -218,12 +218,11 @@ class _CreateReportDetailsScreenState extends State<CreateReportDetailsScreen> {
         if (decodedResponse != null &&
             decodedResponse['display_name'] != null) {
 // <-- Check for display_name
-          setState(() {
-            _shippingAddress = decodedResponse[
-                'display_name']; // <-- Use display_name directly
-            print(
-                "Shipping address set to: $_shippingAddress"); // Log shipping address
-          });
+            if (mounted) {
+              setState(() {
+                _shippingAddress = decodedResponse['display_name']; // <-- Use display_name directly
+              });
+            }
           return _shippingAddress;
         } else {
           print(
@@ -231,33 +230,39 @@ class _CreateReportDetailsScreenState extends State<CreateReportDetailsScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
                 content: Text('No address found for selected location.')),
-          );
-          setState(() {
-            _shippingAddress = '';
-          });
+          ); // Log shipping address
+            if (mounted) {
+              setState(() {
+                _shippingAddress = '';
+              });
+            }
           return null;
         }
       } else {
 // Handle API error (e.g., show an error message)
         print(
             "Nominatim API request failed with status: ${response.statusCode}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to get address.')),
-        );
-        setState(() {
-          _shippingAddress = '';
-        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Falha ao obter endereço.')),
+          );
+          setState(() {
+            _shippingAddress = '';
+          });
+        }
         return null;
       }
     } catch (e) {
 // Handle any exceptions (e.g., network issues)
       print("Error fetching address: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to get address.')),
-      );
-      setState(() {
-        _shippingAddress = '';
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Falha ao obter endereço.')),
+        );
+        setState(() {
+          _shippingAddress = '';
+        });
+      }
       return null;
     }
   }
@@ -409,14 +414,14 @@ class _CreateReportDetailsScreenState extends State<CreateReportDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'detalhe o risco e as potencias\ncausas do risco',
+              'Detalhe o risco e as potenciais\ncausas do risco',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
             TextField(
               controller: _titleController,
               decoration: InputDecoration(
-                hintText: 'Titulo',
+                hintText: 'Título',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20.0),
                 ),
@@ -432,8 +437,7 @@ class _CreateReportDetailsScreenState extends State<CreateReportDetailsScreen> {
               controller: _descriptionController,
               maxLines: 5,
               decoration: InputDecoration(
-                hintText:
-                    'Contrary to popular belief , Lorem Ipsum\nis not simply random text . It has roots in\na piece of classical Latin literature from\n45 BC , making it over 2000 years old .\nRichard McClintock , a Latin professor at\nHampden - Sydney College in Virginia ,\nlooked up one of the more obscure Latin\nwords , consectetur , from a Lorem Ipsum\npassage , and going through the cites of\nthe word in',
+                hintText: 'Descreva detalhadamente o risco observado, possíveis causas, e qualquer informação relevante...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20.0),
                 ),
@@ -493,8 +497,8 @@ class CreateReportSuccessScreen extends StatelessWidget {
               size: 120,
             ),
             SizedBox(height: 20),
-            Text(
-              'Concluido .',
+            const Text(
+              'Concluído.',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -502,8 +506,8 @@ class CreateReportSuccessScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8),
-            Text(
-              'Reportagem criada com sucesso .',
+            const Text(
+              'Reportagem criada com sucesso.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16),
             ),
@@ -511,14 +515,14 @@ class CreateReportSuccessScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   'Ganhaste',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(width: 8),
-                Icon(Icons.star_border, color: Colors.red, size: 20),
-                SizedBox(width: 4),
-                Text(
+                const SizedBox(width: 8),
+                const Icon(Icons.star_border, color: Colors.red, size: 20),
+                const SizedBox(width: 4),
+                const Text(
                   '30 pontos',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
@@ -538,9 +542,9 @@ class CreateReportSuccessScreen extends StatelessWidget {
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                              Text('Erro ao carregar detalhes da reportagem.')),
+                      const SnackBar(
+                          content: Text(
+                              'Erro ao carregar detalhes da reportagem.')),
                     );
                   }
                 },
@@ -553,7 +557,7 @@ class CreateReportSuccessScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(25.0),
                   ),
                 ),
-                child: Text('Ver reportagem'),
+                child: const Text('Ver reportagem'),
               ),
             ),
             SizedBox(height: 16),
@@ -573,7 +577,7 @@ class CreateReportSuccessScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(25.0),
                   ),
                 ),
-                child: Text('voltar ao inicio'),
+                child: const Text('Voltar ao início'),
               ),
             ),
           ],
