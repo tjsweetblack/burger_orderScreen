@@ -181,7 +181,6 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
       final fontSize = isTouched ? 17.0 : 13.0; // Adjusted font sizes
       final radius =
           isTouched ? 70.0 : 60.0; // Adjusted radius for touch effect
-      final widgetSize = isTouched ? 55.0 : 40.0;
 
       String titleText;
       if (totalValue > 0 && (count / totalValue) < 0.07 && count > 0) {
@@ -202,24 +201,31 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
           color: Colors.white, // Ensure good contrast
           shadows: [const Shadow(color: Colors.black54, blurRadius: 3)],
         ),
- 
       ));
     }
 
     return PieChart(
       PieChartData(
         pieTouchData: PieTouchData(
-          touchCallback: (FlTouchEvent event, pieTouchResponse) {
-            setState(() {
-              if (!event.isInterestedForInteractions ||
-                  pieTouchResponse == null ||
-                  pieTouchResponse.touchedSection == null) {
-                _touchedIndex = -1;
-                return;
-              }
-              _touchedIndex =
+          touchCallback:
+              (FlTouchEvent event, PieTouchResponse? pieTouchResponse) {
+            // Determine the new index based on the event and response
+            int newTouchedIndex = -1; // Default to no section touched
+
+            if (event.isInterestedForInteractions &&
+                pieTouchResponse != null &&
+                pieTouchResponse.touchedSection != null) {
+              newTouchedIndex =
                   pieTouchResponse.touchedSection!.touchedSectionIndex;
-            });
+            }
+
+            // Only call setState if the touched index has actually changed
+            // This prevents rapid blinking on hover when the hovered section remains the same.
+            if (_touchedIndex != newTouchedIndex) {
+              setState(() {
+                _touchedIndex = newTouchedIndex;
+              });
+            }
           },
         ),
         borderData: FlBorderData(show: false),
@@ -246,21 +252,19 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     int colorIndex = 0;
     final sortedKeys = reportsByRiskLevel.keys.toList()..sort();
 
-    double M_maxY_from_data = 0;
+    double maxYFromData = 0;
     if (reportsByRiskLevel.values.isNotEmpty) {
-      M_maxY_from_data =
+      maxYFromData =
           reportsByRiskLevel.values.reduce((a, b) => a > b ? a : b).toDouble();
     }
     // Ensure a minimum maxY for the chart axis, especially if all data points are 0.
-    double M_maxY_for_axis =
-        (M_maxY_from_data == 0 && reportsByRiskLevel.isNotEmpty)
-            ? 10.0
-            : M_maxY_from_data;
+    double maxYForAxis = (maxYFromData == 0 && reportsByRiskLevel.isNotEmpty)
+        ? 10.0
+        : maxYFromData;
     if (reportsByRiskLevel.isEmpty)
-      M_maxY_for_axis = 10.0; // Default if called with empty data
+      maxYForAxis = 10.0; // Default if called with empty data
 
-    final chartMaxY =
-        M_maxY_for_axis + (M_maxY_for_axis * 0.2); // Add 20% padding
+    final chartMaxY = maxYForAxis + (maxYForAxis * 0.2); // Add 20% padding
 
     for (var riskLevel in sortedKeys) {
       final count = reportsByRiskLevel[riskLevel]!;
@@ -294,7 +298,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
     }
 
     final double yAxisInterval =
-        M_maxY_for_axis > 5 ? (M_maxY_for_axis / 5).ceilToDouble() : 1;
+        maxYForAxis > 5 ? (maxYForAxis / 5).ceilToDouble() : 1;
 
     return BarChart(
       BarChartData(
@@ -339,10 +343,10 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
             reservedSize: 36, // Adjusted for label space
             interval: yAxisInterval,
             getTitlesWidget: (double value, TitleMeta meta) {
-              if (value == meta.max && M_maxY_from_data > 0)
+              if (value == meta.max && maxYFromData > 0)
                 return const SizedBox.shrink(); // Avoid clutter at top
               if (value == 0 &&
-                  M_maxY_from_data == 0 &&
+                  maxYFromData == 0 &&
                   reportsByRiskLevel.isNotEmpty)
                 return Text(value.toInt().toString(),
                     style: const TextStyle(fontSize: 10));
@@ -372,51 +376,6 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
               strokeWidth: 1,
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-// Helper class for PieChart badges (optional, for visual flair)
-class _Badge extends StatelessWidget {
-  const _Badge(
-    this.color, {
-    required this.size,
-    required this.borderColor,
-  });
-  final double size;
-  final Color color;
-  final Color borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: PieChart.defaultDuration,
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: borderColor,
-          width: 2,
-        ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withOpacity(.5),
-            offset: const Offset(3, 3),
-            blurRadius: 3,
-          ),
-        ],
-      ),
-      padding: EdgeInsets.all(size * .15),
-      child: Center(
-        child: Container(
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
         ),
       ),
     );
