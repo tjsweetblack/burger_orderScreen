@@ -20,7 +20,6 @@ class AdminStatsScreen extends StatefulWidget {
 }
 
 class _AdminStatsScreenState extends State<AdminStatsScreen> {
-  // Define a list of colors for chart sections
   static const List<Color> _chartColors = [
     Colors.blue,
     Colors.red,
