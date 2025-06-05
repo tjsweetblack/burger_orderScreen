@@ -11,7 +11,7 @@ import 'package:auth_bloc/routing/routes.dart';
 Widget buildAppDrawer(BuildContext context) {
   final screenWidth = MediaQuery.of(context).size.width;
   return SizedBox(
-    width: screenWidth * 0.7, // Covers 70% of the screen
+    width: screenWidth * 0.3, // Covers 70% of the screen
     child: Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
