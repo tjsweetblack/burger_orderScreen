@@ -1,7 +1,9 @@
 import 'package:auth_bloc/logic/cubit/auth_cubit.dart';
 import 'package:auth_bloc/routing/routes.dart';
-import 'package:auth_bloc/screens/menu.dart';
+import 'package:auth_bloc/screens/blog/blog_screen.dart';
+import 'package:auth_bloc/screens/profile/profile.dart';
 import 'package:auth_bloc/screens/report/create_report.dart';
+import 'package:auth_bloc/screens/stats/stats.dart'; // Added import for AdminStatsScreen
 import 'package:auth_bloc/screens/report/report_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +20,6 @@ class MapZzzPage extends StatefulWidget {
 
 class _MapZzzPageState extends State<MapZzzPage> {
   final LatLng belasLuanda = LatLng(-8.9036, 13.2489);
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final MapController _mapController = MapController();
   Map<String, dynamic>? _selectedReport;
   String? _selectedReportId;
@@ -49,7 +50,7 @@ class _MapZzzPageState extends State<MapZzzPage> {
     }
     return await Geolocator.getCurrentPosition();
   }
-  
+
   void _zoomInMap() {
     final currentZoom = _mapController.camera.zoom;
     _mapController.move(_mapController.camera.center, currentZoom + 1);
@@ -60,48 +61,77 @@ class _MapZzzPageState extends State<MapZzzPage> {
     _mapController.move(_mapController.camera.center, currentZoom - 1);
   }
 
+  // Navigation and Action Methods for AppBar Icons
+  void _navigateToProfile() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const ProfileForm()));
+    // Example: Navigator.pushNamed(context, profileRoute);
+  }
+
+  void _navigateToBlog() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const BlogPage()));
+  }
+
+  void _navigateToStats() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AdminStatsScreen()),
+    );
+  }
+
+  void _logoutUser() async {
+    Navigator.pop(context); // Close the drawer
+    await context.read<AuthCubit>().signOut();
+    if (context.mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        Routes.loginScreen,
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final authCubit = context.watch<AuthCubit>();
-    final userId = authCubit.currentUser?.uid;
-
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.black),
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
+        foregroundColor: Colors.black, // Ensures icons are black
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'MapaZZZ',
+          style: TextStyle(
+              fontWeight: FontWeight.bold), // Optional: make title bold
         ),
-        title: Row(
-          children: [
-            Text(
-              'MapaZZZ',
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-            Spacer(),
-            Row(
-              children: [
-                Icon(Icons.badge, color: Colors.red, size: 18),
-                SizedBox(width: 4),
-                Text(
-                  'ADMIN',
-                  style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
-                ),
-                SizedBox(width: 8),
-              ],
-            ),
-          ],
-        ),
+        centerTitle: true,
         elevation: 0,
+        actions: <Widget>[
+          IconButton(
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:2727245635.
+              icon: const Icon(
+                Icons.person,
+                color: Color.fromARGB(255, 255, 0, 0),
+              ),
+              tooltip: 'Perfil',
+              onPressed: _navigateToProfile),
+          IconButton(
+              icon: const Icon(Icons.article,
+                  color: Color.fromARGB(255, 255, 0, 0)),
+              tooltip: 'Blog',
+              onPressed: _navigateToBlog),
+          IconButton(
+              icon: const Icon(Icons.bar_chart,
+                  color: Color.fromARGB(255, 255, 0, 0)),
+              tooltip: 'Estatísticas',
+              onPressed: _navigateToStats),
+          IconButton(
+              icon: const Icon(Icons.logout,
+                  color: Color.fromARGB(255, 255, 0, 0)),
+              tooltip: 'Sair',
+              onPressed: _logoutUser),
+        ],
       ),
-      drawer: buildAppDrawer(context),
+      // drawer: buildAppDrawer(context), // Removed drawer
       body: Row(
         children: [
           Container(
@@ -407,7 +437,7 @@ class _MapWidgetState extends State<MapWidget> {
     }
     return await Geolocator.getCurrentPosition();
   }
-  
+
   Widget _greyScaleTileBuilder(
     BuildContext context,
     Widget tileWidget,

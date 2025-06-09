@@ -23,7 +23,7 @@ class _ProfileFormState extends State<ProfileForm> {
   @override
   void initState() {
     super.initState();
-    _isLoading = true; //start loading
+    _isLoading = true;
     _firstNameController = TextEditingController();
     _lastNameController = TextEditingController();
     _usernameController = TextEditingController();
@@ -141,56 +141,97 @@ class _ProfileFormState extends State<ProfileForm> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator()); //show loading
+      // Show a full-page loader if desired, or integrate into Scaffold
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Editar Perfil'),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 1,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
     }
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildTextField("Nome", _firstNameController,
-                    labelTextColor: Colors.black87),
-                _buildTextField("Sobrenome", _lastNameController,
-                    labelTextColor: Colors.black87),
-                _buildTextField("Nome de Usuário", _usernameController,
-                    labelTextColor: Colors.black87),
-                _buildTextField("Email", _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    labelTextColor: Colors.black87),
-                _buildTextField("Número de Telefone", _phoneController,
-                    keyboardType: TextInputType.phone,
-                    prefixText: '+234 ▼ ',
-                    suffixIcon: const Icon(Icons.arrow_drop_down,
-                        color: Colors.black87),
-                    labelTextColor: Colors.black87),
-                _buildDropdown("Data de Nascimento", const [''],
-                    labelTextColor: Colors.black87),
-                _buildDropdown("Gender", const [''],
-                    labelTextColor: Colors.black87),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: _isUpdating
-                      ? null
-                      : () {
-                          _updateProfile(_user!.uid);
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Editar Perfil'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildTextField("Nome", _firstNameController,
+                              labelTextColor: Colors.black87),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildTextField(
+                              "Sobrenome", _lastNameController,
+                              labelTextColor: Colors.black87),
+                        ),
+                      ],
                     ),
-                  ),
-                  child: _isUpdating
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Atualizar Perfil',
-                          style: TextStyle(color: Colors.white, fontSize: 16)),
+                    _buildTextField("Nome de Usuário", _usernameController,
+                        labelTextColor: Colors.black87),
+                    _buildTextField("Email", _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        labelTextColor: Colors.black87),
+                    _buildTextField("Número de Telefone", _phoneController,
+                        keyboardType: TextInputType.phone,
+                        prefixText:
+                            '+234 ▼ ', // Consider making this dynamic or a country code picker
+                        suffixIcon: const Icon(Icons.arrow_drop_down,
+                            color: Colors.black87),
+                        labelTextColor: Colors.black87),
+                    _buildDropdown("Data de Nascimento",
+                        [], // Pass empty list for placeholder
+                        hintText: "DD/MM/AAAA", // Example hint
+                        labelTextColor: Colors.black87),
+                    _buildDropdown(
+                        "Gender", [], // Pass empty list for placeholder
+                        hintText: "Selecione o gênero", // Example hint
+                        labelTextColor: Colors.black87),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: _isUpdating
+                          ? null
+                          : () {
+                              if (_user?.uid != null) {
+                                _updateProfile(_user!.uid);
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                      child: _isUpdating
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 3))
+                          : const Text('Atualizar Perfil',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16)),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -229,7 +270,7 @@ class _ProfileFormState extends State<ProfileForm> {
   }
 
   Widget _buildDropdown(String labelText, List<String> items,
-      {Color? labelTextColor}) {
+      {String? hintText, Color? labelTextColor}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
@@ -248,7 +289,10 @@ class _ProfileFormState extends State<ProfileForm> {
               color: Colors.white,
             ),
             child: DropdownButtonFormField<String>(
-              value: null,
+              value: null, // No default selection for placeholders
+              hint: hintText != null
+                  ? Text(hintText, style: TextStyle(color: Colors.grey[600]))
+                  : null,
               items: items.map((String item) {
                 return DropdownMenuItem<String>(
                   value: item,
@@ -256,9 +300,12 @@ class _ProfileFormState extends State<ProfileForm> {
                       Text(item, style: const TextStyle(color: Colors.black)),
                 );
               }).toList(),
-              onChanged: (String? newValue) {
-                // Handle dropdown changes
-              },
+              onChanged: items.isEmpty
+                  ? null
+                  : (String? newValue) {
+                      // Disable if no items
+                      // Handle dropdown changes
+                    },
               dropdownColor: Colors.white,
               style: const TextStyle(color: Colors.black),
               decoration: const InputDecoration(
