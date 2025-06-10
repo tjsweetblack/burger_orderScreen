@@ -23,6 +23,7 @@ class _MapZzzPageState extends State<MapZzzPage> {
   final MapController _mapController = MapController();
   Map<String, dynamic>? _selectedReport;
   String? _selectedReportId;
+  bool _isMapViewActive = true; // Controls whether map or stats are shown
 
   void _recenterMapToUser() async {
     final Position position = await _getCurrentLocation();
@@ -73,12 +74,22 @@ class _MapZzzPageState extends State<MapZzzPage> {
         context, MaterialPageRoute(builder: (context) => const BlogPage()));
   }
 
-  void _navigateToStats() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const AdminStatsScreen()),
-    );
+  void _showStatsView() {
+    if (_isMapViewActive) {
+      setState(() {
+        _isMapViewActive = false;
+      });
+    }
   }
+
+  void _showMapView() {
+    if (!_isMapViewActive) {
+      setState(() {
+        _isMapViewActive = true;
+      });
+    }
+  }
+
 
   void _logoutUser() async {
     Navigator.pop(context); // Close the drawer
@@ -95,7 +106,7 @@ class _MapZzzPageState extends State<MapZzzPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         foregroundColor: Colors.black, // Ensures icons are black
         automaticallyImplyLeading: false,
         title: const Text(
@@ -120,10 +131,15 @@ class _MapZzzPageState extends State<MapZzzPage> {
               tooltip: 'Blog',
               onPressed: _navigateToBlog),
           IconButton(
+              icon:
+                  const Icon(Icons.map, color: Color.fromARGB(255, 255, 0, 0)), // Corrected icon
+              tooltip: 'Mapa', // Corrected tooltip
+              onPressed: _showMapView), // Corrected action
+          IconButton(
               icon: const Icon(Icons.bar_chart,
                   color: Color.fromARGB(255, 255, 0, 0)),
               tooltip: 'Estatísticas',
-              onPressed: _navigateToStats),
+              onPressed: _showStatsView), // Updated action
           IconButton(
               icon: const Icon(Icons.logout,
                   color: Color.fromARGB(255, 255, 0, 0)),
@@ -149,7 +165,9 @@ class _MapZzzPageState extends State<MapZzzPage> {
             ),
             child: Column(
               children: [
-                SizedBox(height: 16),
+                SizedBox(
+                  height: 16,
+                ),
                 Text(
                   'Reportagens',
                   style: TextStyle(
@@ -167,6 +185,7 @@ class _MapZzzPageState extends State<MapZzzPage> {
                       setState(() {
                         _selectedReport = reportData;
                         _selectedReportId = reportId;
+                        _isMapViewActive = true; // Show map when a report is selected
                       });
                     }),
                   ),
@@ -174,47 +193,50 @@ class _MapZzzPageState extends State<MapZzzPage> {
             ),
           ),
           Expanded(
-            child: Stack(
-              children: [
-                MapWidget(
-                  mapController: _mapController,
-                  selectedReportId: _selectedReportId,
-                  onReportSelected: (reportId, reportData, lat, lon) {
-                    setState(() {
-                      _selectedReport = reportData;
-                      _selectedReportId = reportId;
-                    });
-                    if (lat != null && lon != null) {
-                      _mapController.move(LatLng(lat, lon), 17.0);
-                    }
-                  },
-                ),
-                Positioned(
-                  bottom: 16, // Adjust position as needed
-                  right: 16,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+            child: _isMapViewActive
+                ? Stack(
                     children: [
-                      GestureDetector(
-                        onTap: _zoomInMap,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.white,
-                          child: Icon(Icons.add, color: Colors.red),
-                        ),
+                      MapWidget(
+                        mapController: _mapController,
+                        selectedReportId: _selectedReportId,
+                        onReportSelected: (reportId, reportData, lat, lon) {
+                          setState(() {
+                            _selectedReport = reportData;
+                            _selectedReportId = reportId;
+                            // _isMapViewActive is already true here
+                          });
+                          if (lat != null && lon != null) {
+                            _mapController.move(LatLng(lat, lon), 17.0);
+                          }
+                        },
                       ),
-                      SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: _zoomOutMap,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.white,
-                          child: Icon(Icons.remove, color: Colors.red),
+                      Positioned(
+                        bottom: 16, // Adjust position as needed
+                        right: 16,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            GestureDetector(
+                              onTap: _zoomInMap,
+                              child: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                child: Icon(Icons.add, color: Colors.red),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            GestureDetector(
+                              onTap: _zoomOutMap,
+                              child: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                child: Icon(Icons.remove, color: Colors.red),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ],
-            ),
+                  )
+                : const AdminStatsScreen(), // Show AdminStatsScreen if _isMapViewActive is false
           ),
         ],
       ),

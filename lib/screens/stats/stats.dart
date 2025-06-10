@@ -85,12 +85,7 @@ class _AdminStatsScreenState extends State<AdminStatsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Estatísticas do Administrador'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 1,
-      ),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _statisticsFuture,
         builder: (context, snapshot) {
