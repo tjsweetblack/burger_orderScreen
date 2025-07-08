@@ -48,12 +48,12 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   Future<void> _loadPdfFonts() async {
     try {
       // It's good practice to have both regular and bold for PDF reports.
-      final regularFontData = await rootBundle.load('/fonts/ARIAL.TTF');
+      final regularFontData = await rootBundle.load('assets/fonts/ARIAL.TTF');
       _regularFont = pw.Font.ttf(regularFontData);
 
       // You must add a bold version of the font to your assets.
       // ARIALBD.TTF is a common filename for Arial Bold.
-      final boldFontData = await rootBundle.load('/fonts/ARIALBD.TTF');
+      final boldFontData = await rootBundle.load('assets/fonts/ARIALBD.TTF');
       _boldFont = pw.Font.ttf(boldFontData);
 
       setState(() {
