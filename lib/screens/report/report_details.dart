@@ -6,11 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:flutter/services.dart'; // Make sure this is imported
+import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:url_launcher/url_launcher.dart'; // Import for launching URLs
 import 'package:image/image.dart' as img; // For loading fonts
+import 'package:google_generative_ai/google_generative_ai.dart';
 
 class ReportDetailPage extends StatefulWidget {
   final Map<String, dynamic> report;
@@ -25,29 +28,40 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   String? _userName;
   bool _isLoadingUser = true;
   int? _userVote; // Track user's vote
+  bool _isProcessingResolution = false; // To show loading indicator
   final TextEditingController _resolutionController = TextEditingController();
 
-  pw.Font? _unicodeFont; // To store the Unicode-supporting font
+  // PDF Font state
+  pw.Font? _regularFont;
+  pw.Font? _boldFont;
+  bool _areFontsLoaded = false;
 
   @override
   void initState() {
     super.initState();
     _fetchUserName();
-    _loadUnicodeFont();
+    _loadPdfFonts();
   }
 
-  Future<void> _loadUnicodeFont() async {
+  /// Loads the regular and bold fonts required for generating the PDF.
+  /// This prevents Unicode character issues.
+  Future<void> _loadPdfFonts() async {
     try {
-      final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
-      final buffer = fontData.buffer;
-      final uint8List =
-          buffer.asUint8List(fontData.offsetInBytes, fontData.lengthInBytes);
-      final byteData = ByteData.view(
-          uint8List.buffer); // Create ByteData from Uint8List's buffer
-      _unicodeFont = pw.Font.ttf(byteData);
+      // It's good practice to have both regular and bold for PDF reports.
+      final regularFontData = await rootBundle.load('/fonts/ARIAL.TTF');
+      _regularFont = pw.Font.ttf(regularFontData);
+
+      // You must add a bold version of the font to your assets.
+      // ARIALBD.TTF is a common filename for Arial Bold.
+      final boldFontData = await rootBundle.load('/fonts/ARIALBD.TTF');
+      _boldFont = pw.Font.ttf(boldFontData);
+
+      setState(() {
+        _areFontsLoaded = true;
+      });
     } catch (e) {
-      print("Error loading Unicode font: $e");
-      // Fallback to default font
+      print("Error loading PDF fonts: $e");
+      _showErrorDialog("Erro de Fonte", "Não foi possível carregar as fontes para o PDF. Verifique se 'ARIAL.TTF' e 'ARIALBD.TTF' (ou a fonte em negrito correspondente) estão na pasta 'assets/fonts/'.");
     }
   }
 
@@ -237,6 +251,9 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   }
 
   Future<void> _markAsResolvedAndCreateReport(String userSolution) async {
+    setState(() {
+      _isProcessingResolution = true;
+    });
     try {
       // Update the document in Firestore
       await FirebaseFirestore.instance
@@ -255,57 +272,183 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
       print("Error updating report status or creating PDF: $e");
       _showErrorDialog("Erro",
           "Falha ao atualizar o status da reportagem ou criar o relatório.");
+    } finally {
+      // Ensure the loading indicator is turned off
+      setState(() {
+        _isProcessingResolution = false;
+      });
     }
   }
 
-  Future<void> _createAndDownloadPdf(String userSolution) async {
+   Future<void> _createAndDownloadPdf(String userSolution) async {
+    if (!_areFontsLoaded || _regularFont == null || _boldFont == null) {
+      _showErrorDialog("Erro", "As fontes para o PDF ainda não foram carregadas. Por favor, tente novamente.");
+      return;
+    }
+
+    String? geminiAnalysisText;
+    try {
+      // IMPORTANT: Use environment variables for API keys, do not hardcode them.
+      // Run your app with: flutter run --dart-define=GEMINI_API_KEY=YOUR_API_KEY
+      const apiKey = 'AIzaSyBAO_rST4zn3HeQNFHDCXaczAwLMQ0VROg';
+      if (apiKey.isEmpty) {
+        throw Exception('A chave da API do Gemini não foi configurada.');
+      }
+      // Corrected model name to a valid one.
+      final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
+      final prompt = '''
+        Baseado no seguinte relatório de um problema urbano, gere uma análise detalhada em Português.
+        O relatório foi marcado como resolvido.
+
+        Título: ${widget.report['title']}
+        Descrição: ${widget.report['description']}
+        Localização: ${widget.report['location']}
+        Solução aplicada pelo usuário: $userSolution
+
+        Sua análise deve incluir os seguintes pontos, formatados para um relatório em PDF:
+        1.  **Resumo do Problema:** Um breve resumo do risco que foi reportado.
+        2.  **Impacto Potencial:** Descreva os riscos e impactos potenciais que o problema representava para a comunidade (segurança, saúde pública, meio ambiente, etc.) se não fosse resolvido.
+        3.  **Avaliação da Solução:** Comente sobre a eficácia da solução aplicada pelo usuário.
+        4.  **Recomendações Futuras:** Sugira medidas preventivas para evitar que problemas semelhantes ocorram no futuro.
+
+        Use títulos em negrito para cada seção (ex: **Resumo do Problema:**).
+      ''';
+
+      final content = [Content.text(prompt)];
+      final response = await model.generateContent(content);
+      geminiAnalysisText = response.text;
+    } catch (e) {
+      print("Error generating content with Gemini: $e");
+      geminiAnalysisText = "Falha ao gerar a análise detalhada: $e";
+      _showErrorDialog("Erro na IA", "Não foi possível gerar a análise detalhada com a IA. O PDF será gerado sem ela. Erro: $e");
+    }
+
     final pdf = pw.Document();
 
-    final imageUrl = widget.report['imageUrl'];
-    pw.Image? imageWidget;
+    // --- Load Logo Image ---
+    pw.Image? logoImageWidget;
     try {
-      final html.HttpRequest request = await html.HttpRequest.request(imageUrl);
-      final Uint8List imageBytes = request.response as Uint8List;
-
-      // Decode the image using the image package
-      final decodedImage = img.decodeImage(imageBytes);
-
-      if (decodedImage != null) {
-        // Encode the image to PNG format (you can choose other formats if needed)
-        final pngBytes = img.encodePng(decodedImage) as Uint8List;
-
-        // Create the PDF image widget from the PNG bytes
-        imageWidget = pw.Image(pw.MemoryImage(pngBytes));
+      final ByteData logoByteData = await rootBundle.load('assets/images/logo/logo.png');
+      final Uint8List logoBytes = logoByteData.buffer.asUint8List();
+      final decodedLogo = img.decodeImage(logoBytes);
+      if (decodedLogo != null) {
+        final pngLogoBytes = img.encodePng(decodedLogo);
+        logoImageWidget = pw.Image(pw.MemoryImage(pngLogoBytes), width: 80);
       } else {
-        print("Error decoding image.");
+        print("Error decoding logo image.");
       }
     } catch (e) {
-      print("Error loading or processing image: $e");
+      print("Error loading or processing logo image: $e");
+    }
+    //--- Load Report Image ---
+    final imageUrl = widget.report['imageUrl'];
+    pw.Widget? reportImageWidget;
+
+    print("Attempting to load image from URL: $imageUrl");
+
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      try {
+        print("Fetching image data using http package...");
+        final response = await http.get(Uri.parse(imageUrl));
+        if (response.statusCode == 200) {
+          final Uint8List imageBytes = response.bodyBytes;
+          print("Image data fetched. Byte length: ${imageBytes.length}");
+
+          if (imageBytes.isEmpty) {
+            print("Warning: Fetched image data is empty.");
+          }
+
+          final decodedImage = img.decodeImage(imageBytes);
+
+          if (decodedImage != null) {
+            print("Image decoded successfully. Width: ${decodedImage.width}, Height: ${decodedImage.height}");
+            final pngBytes = img.encodePng(decodedImage);
+
+            // --- FIX: Adjust image size to fit page ---
+            // Calculate available height based on a standard A4 page (or your desired format)
+            // and estimate space taken by other elements (logo, text).
+            // This is an estimation, you might need to fine-tune the 0.6 factor.
+            // A typical A4 page is ~842 points tall.
+            // Available height after typical margins might be ~728 points (as per your error).
+            // Let's reserve about 60-70% of the available height for the main image.
+            const double contentPadding = 30; // Estimate space taken by logo, title, descriptions, etc.
+            final double availablePageHeightForContent = PdfPageFormat.a4.availableHeight - contentPadding;
+            final double maxImageHeight = availablePageHeightForContent * 0.5; // e.g., 60% of available content height
+
+            // Wrap the Image in a Container with a specific height to guarantee
+            // the constraint and prevent it from overflowing the page.
+            reportImageWidget = pw.Container(
+              height: maxImageHeight,
+              child: pw.Image(
+                pw.MemoryImage(pngBytes),
+                fit: pw.BoxFit.contain, // This will scale the image to fit within the container
+              ),
+            );
+            print("PDF Image widget created with fitting adjustments (max height: $maxImageHeight).");
+          } else {
+            print("Error: Failed to decode image. The image format might be unsupported or the data is corrupt.");
+          }
+        } else {
+          print("----------- HTTP ERROR -----------");
+          print("Failed to fetch image. Status code: ${response.statusCode}");
+          print("Response body: ${response.body}");
+          print("----------------------------------");
+        }
+      } catch (e) {
+        print("----------- CATCH ERROR -----------");
+        print("Error loading or processing report image: $e");
+        print("This can be a CORS (Cross-Origin Resource Sharing) issue when running on the web.");
+        print("Ensure the server hosting the image (e.g., Firebase Storage) allows requests from this web app's domain.");
+        print("-----------------------------------");
+      }
+    } else {
+      print("Image URL is null or empty. Skipping image loading.");
     }
 
     pdf.addPage(pw.MultiPage(
       theme: pw.ThemeData.withFont(
-        base: _unicodeFont, // Use the loaded Unicode font
+        base: _regularFont!,
+        bold: _boldFont!,
       ),
       build: (pw.Context context) => <pw.Widget>[
-        if (imageWidget != null) imageWidget,
-        pw.SizedBox(height: 10),
+        if (logoImageWidget != null) ...[
+          pw.Center(child: logoImageWidget),
+          pw.SizedBox(height: 20),
+        ],
+        // The report image is the most likely culprit for overflow.
+        // Ensure it's sized appropriately as done above.
         pw.Text(widget.report['title'],
             style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+        if (reportImageWidget != null) ...[
+          pw.Center(child: reportImageWidget),
+          pw.SizedBox(height: 10),
+        ],
         pw.SizedBox(height: 10),
         pw.Text('Descrição:',
             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-        pw.Text(widget.report['description'] ?? 'Nenhuma descrição fornecida.'),
-        pw.SizedBox(height: 10), // Added space
+        pw.Paragraph(text: widget.report['description'] ?? 'Nenhuma descrição fornecida.'),
+        pw.SizedBox(height: 10),
         pw.Text('Solução sugerida pela IA:',
             style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-        pw.Text(widget.report['solutionAi'] ??
-            'Nenhuma solução fornecida.'), // Added space
+        pw.Paragraph(text: widget.report['solutionAi'] ?? 'Nenhuma solução fornecida.'),
         pw.SizedBox(height: 10),
         pw.Text('Solução do usuário:',
-            style: pw.TextStyle(
-                fontSize: 16, fontWeight: pw.FontWeight.bold)), // Added space
-        pw.Text(userSolution),
+            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+        pw.Paragraph(text: userSolution),
+        // Force a new page for the detailed analysis to prevent overflow errors.
+        //pw.NewPage(),
+        if (geminiAnalysisText != null && geminiAnalysisText.isNotEmpty) ...[
+          pw.SizedBox(height: 20),
+          pw.Divider(),
+          pw.SizedBox(height: 10),
+          pw.Text('Análise Detalhada do Relatório (Gerada por IA)',
+              style:
+                  pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+          pw.SizedBox(height: 10),
+          // The Gemini API can return markdown. For simplicity, we'll display it as text.
+          // The prompt asks for bolded headers, which the model will generate in the text.
+          pw.Paragraph(text: geminiAnalysisText),
+        ],
       ],
     ));
 
@@ -319,8 +462,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
       html.Url.revokeObjectUrl(url);
     } catch (e) {
       print("Error saving PDF: $e");
-      _showErrorDialog("Erro ao salvar PDF",
-          "Ocorreu um erro ao salvar o relatório em PDF: $e");
+      _showErrorDialog("Erro ao salvar PDF", "Ocorreu um erro ao salvar o relatório em PDF: $e");
     }
   }
 
@@ -485,8 +627,10 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        _showResolutionDialog();
+                      onPressed: _isProcessingResolution
+                          ? null
+                          : () async {
+                              _showResolutionDialog();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -496,8 +640,13 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text('Definir como resolvido',
-                          style: TextStyle(fontSize: 18)),
+                      child: _isProcessingResolution
+                          ? CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                          : Text('Definir como resolvido',
+                              style: TextStyle(fontSize: 18)),
                     ),
                   ),
                 ],
