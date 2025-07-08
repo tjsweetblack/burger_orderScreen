@@ -101,6 +101,13 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   # fonts:
+  fonts:
+    - family: ArialForPdf
+      fonts:
+        - asset: assets/fonts/ARIAL.TTF
+        - asset: assets/fonts/ARIALBD.TTF
+          weight: 700 # Bold
+
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf
