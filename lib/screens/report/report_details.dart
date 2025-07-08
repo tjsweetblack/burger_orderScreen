@@ -419,6 +419,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
         // Ensure it's sized appropriately as done above.
         pw.Text(widget.report['title'],
             style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 10),
         if (reportImageWidget != null) ...[
           pw.Center(child: reportImageWidget),
           pw.SizedBox(height: 10),
