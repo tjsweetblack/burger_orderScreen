@@ -295,7 +295,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
         throw Exception('A chave da API do Gemini não foi configurada.');
       }
       // Corrected model name to a valid one.
-      final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
+      final model = GenerativeModel(model: 'gemma-3n-e4b-it', apiKey: apiKey);
       final prompt = '''
         Baseado no seguinte relatório de um problema urbano, gere uma análise detalhada em Português.
         O relatório foi marcado como resolvido.
